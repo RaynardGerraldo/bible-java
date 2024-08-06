@@ -95,7 +95,6 @@ public class Application {
     public int chapterDB(String book){
         int chapters = 0;
         book = book_dict.get(book);
-        System.out.println(book);
         String query = "SELECT COUNT(DISTINCT chapter) AS chapters FROM verse WHERE book=?";
         try (Connection conn = DriverManager.getConnection(url)){
             PreparedStatement pstmt = conn.prepareStatement(query);
@@ -103,7 +102,6 @@ public class Application {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()){
                 chapters = rs.getInt("chapters");
-                System.out.println(chapters);
             }
             rs.close();
             pstmt.close();
@@ -126,7 +124,6 @@ public class Application {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()){
                 verses = rs.getInt("verses");
-                System.out.println(verses);
             }
             rs.close();
             pstmt.close();
@@ -136,11 +133,12 @@ public class Application {
         }
         return verses;
     }
-    // Not ready yet
+
     public void bibleDB(String book, int chapter, int start_verse, Integer end_verse) {
+        book = book_dict.get(book);
         String query = "SELECT text FROM verse WHERE book=? AND chapter=? AND start_verse=?";
         try (Connection conn = DriverManager.getConnection(url)){
-           if (end_verse != null || end_verse != 0) {
+           if (end_verse != null && end_verse != 0) {
                query += " AND end_verse=?";
            }
 
@@ -150,14 +148,13 @@ public class Application {
            pstmt.setInt(2, chapter);
            pstmt.setInt(3, start_verse);
 
-           if (end_verse != null || end_verse != 0) {
+           if (end_verse != null && end_verse != 0) {
                pstmt.setInt(4, end_verse);
            }
            ResultSet rs = pstmt.executeQuery();
            while (rs.next()){
                 String text = rs.getString("text");
-                String book_name = rs.getString("book");
-                System.out.println(book_name + ": " + text);
+                System.out.println(book + ": " + text);
            }
            rs.close();
            pstmt.close();

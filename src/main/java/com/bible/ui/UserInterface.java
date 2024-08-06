@@ -25,11 +25,14 @@ public class UserInterface {
     private GridBagConstraints gbc;
     private GridBagLayout layout;
     private boolean updatingBooks = false;
+    private String book;
+    private int chapter;
+    private int verse;
     DefaultComboBoxModel<String> testaments = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<String> books = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> chapters = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> verses = new DefaultComboBoxModel<>();
-    
+
     Application backend = new Application();
     public void createUI(){
         Template bible = new Template();
@@ -79,6 +82,13 @@ public class UserInterface {
             }
         });
 
+        search.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                searchVerse();
+            }
+        });
+
         frame.add(panel);
         frame.setVisible(true);
     }
@@ -105,10 +115,9 @@ public class UserInterface {
 
     public void updateChapters(){
         chapters.removeAllElements();
-        Object selectedItem = bookBox.getSelectedItem();
-        if (selectedItem != null) {
-            String bookName = (String) selectedItem;
-            System.out.println(bookName);
+        Object bookItem = bookBox.getSelectedItem();
+        if (bookItem != null) {
+            String bookName = (String) bookItem;
             int chapters_db = backend.chapterDB(bookName);
             for (int i = 1; i < chapters_db+1; i++){
                 chapters.addElement(i);
@@ -128,5 +137,11 @@ public class UserInterface {
                 verses.addElement(i);
             }
        }
+    }
+    public void searchVerse(){
+        book = (String) bookBox.getSelectedItem();
+        chapter = (int) chapterBox.getSelectedItem();
+        verse = (int) startverseBox.getSelectedItem();
+        backend.bibleDB(book,chapter,verse,0);
     }
 }
