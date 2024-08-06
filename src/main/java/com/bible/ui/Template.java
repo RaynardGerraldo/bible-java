@@ -6,6 +6,7 @@ import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 public class Template{
     public void add_obj(Component comp, Container cont, GridBagLayout layout, GridBagConstraints gbc, int gridx, int gridy){
+        gbc.anchor = gbc.CENTER;
         gbc.gridx = gridx;
         gbc.gridy = gridy;
         layout.setConstraints(comp,gbc);
