@@ -12,22 +12,26 @@ import javax.swing.JPanel;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
-import javax.swing.JTextArea;
+import javax.swing.JTextPane;
 import javax.swing.BoxLayout;
 import javax.swing.ScrollPaneConstants;
-
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyleConstants;
 public class UserInterface {
     private JButton search;
     private JFrame frame;
     private JLabel title;
     private JPanel panel;
     private JPanel widgetpanel;
-    private JTextArea display;
+    private JTextPane display;
     private JScrollPane scroller;
     private JComboBox<String> testamentBox;
     private JComboBox<String> bookBox;
     private JComboBox<Integer> chapterBox;
     private JComboBox<Integer> startverseBox;
+    private SimpleAttributeSet bold;
+    private StyledDocument doc;
     private boolean updatingBooks = false;
     private String book;
     private int chapter;
@@ -40,10 +44,12 @@ public class UserInterface {
     Application backend = new Application();
     public void createUI(){
         frame = new JFrame("Bible");
-        display = new JTextArea(30,50);
+        display = new JTextPane();
+        display.setSize(30,50);
         display.setEditable(false);
-        display.setLineWrap(true);
-        display.setWrapStyleWord(true);
+        doc = display.getStyledDocument();
+        bold = new SimpleAttributeSet();
+        StyleConstants.setBold(bold,true);
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         widgetpanel = new JPanel();
@@ -150,6 +156,14 @@ public class UserInterface {
         book = (String) bookBox.getSelectedItem();
         chapter = (int) chapterBox.getSelectedItem();
         verse = (int) startverseBox.getSelectedItem();
-        display.setText(chapter + "|" + verse + " " + backend.bibleDB(book,chapter,verse,0));
+        String whole_verse = backend.bibleDB(book,chapter);
+        String selected_verse = backend.selectedDB(book,chapter,verse,0);
+        int selected_index = whole_verse.indexOf(selected_verse);
+        display.setText(whole_verse);
+        try {
+            doc.setCharacterAttributes(selected_index, selected_verse.length(), bold, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

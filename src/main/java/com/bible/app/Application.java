@@ -134,10 +134,33 @@ public class Application {
         return verses;
     }
 
-    public String bibleDB(String book, int chapter, int start_verse, Integer end_verse) {
+    public String bibleDB(String book, int chapter){
         String text = "";
         book = book_dict.get(book);
-        String query = "SELECT text FROM verse WHERE book=? AND chapter=? AND start_verse=?";
+        StringBuilder result = new StringBuilder();
+        String query = "SELECT CONCAT(chapter,'|',start_verse,'|',text) AS fin_text FROM verse WHERE book=? AND chapter=?";
+        try (Connection conn = DriverManager.getConnection(url)){
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1,book);
+            pstmt.setInt(2,chapter);
+            
+            ResultSet rs = pstmt.executeQuery();
+            while(rs.next()){
+                result.append(rs.getString("fin_text")).append("\n");
+            }
+            rs.close();
+            pstmt.close();
+        }
+        catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return result.toString();
+    }
+
+    public String selectedDB(String book, int chapter, int start_verse, Integer end_verse) {
+        String text = "";
+        book = book_dict.get(book);
+        String query = "SELECT CONCAT(chapter,'|',start_verse,'|',text) AS fin_text FROM verse WHERE book=? AND chapter=? AND start_verse=?";
         try (Connection conn = DriverManager.getConnection(url)){
            if (end_verse != null && end_verse != 0) {
                query += " AND end_verse=?";
@@ -154,7 +177,8 @@ public class Application {
            }
            ResultSet rs = pstmt.executeQuery();
            while (rs.next()){
-                text = rs.getString("text");
+                text = rs.getString("fin_text");
+                System.out.println(text);
            }
            rs.close();
            pstmt.close();
