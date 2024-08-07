@@ -134,7 +134,8 @@ public class Application {
         return verses;
     }
 
-    public void bibleDB(String book, int chapter, int start_verse, Integer end_verse) {
+    public String bibleDB(String book, int chapter, int start_verse, Integer end_verse) {
+        String text = "";
         book = book_dict.get(book);
         String query = "SELECT text FROM verse WHERE book=? AND chapter=? AND start_verse=?";
         try (Connection conn = DriverManager.getConnection(url)){
@@ -153,8 +154,7 @@ public class Application {
            }
            ResultSet rs = pstmt.executeQuery();
            while (rs.next()){
-                String text = rs.getString("text");
-                System.out.println(book + ": " + text);
+                text = rs.getString("text");
            }
            rs.close();
            pstmt.close();
@@ -162,6 +162,7 @@ public class Application {
         catch (SQLException e){
             System.out.println(e.getMessage());
         }
+        return text;
     }
     public void run() {
         UserInterface ui = new UserInterface();

@@ -1,29 +1,33 @@
 package com.bible.ui;
 
 import com.bible.app.Application;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
+import javax.swing.JTextArea;
+import javax.swing.BoxLayout;
+import javax.swing.ScrollPaneConstants;
 
 public class UserInterface {
     private JButton search;
     private JFrame frame;
     private JLabel title;
     private JPanel panel;
+    private JPanel widgetpanel;
+    private JTextArea display;
+    private JScrollPane scroller;
     private JComboBox<String> testamentBox;
     private JComboBox<String> bookBox;
     private JComboBox<Integer> chapterBox;
     private JComboBox<Integer> startverseBox;
-    private GridBagConstraints gbc;
-    private GridBagLayout layout;
     private boolean updatingBooks = false;
     private String book;
     private int chapter;
@@ -35,11 +39,18 @@ public class UserInterface {
 
     Application backend = new Application();
     public void createUI(){
-        Template bible = new Template();
-        frame = new JFrame("My App");
+        frame = new JFrame("Bible");
+        display = new JTextArea(30,50);
+        display.setEditable(false);
+        display.setLineWrap(true);
+        display.setWrapStyleWord(true);
         panel = new JPanel();
-        layout = new GridBagLayout();
-        gbc = new GridBagConstraints();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        widgetpanel = new JPanel();
+        widgetpanel.setLayout(new FlowLayout());
+        scroller = new JScrollPane(display);
+        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         title = new JLabel();
         testamentBox = new JComboBox<>(testaments);
         testaments.addElement("Old Testament");
@@ -48,16 +59,16 @@ public class UserInterface {
         chapterBox = new JComboBox<>(chapters);
         startverseBox = new JComboBox<>(verses);
         search = new JButton("Search");
-        frame.setSize(300,300);
+        widgetpanel.add(testamentBox);
+        widgetpanel.add(bookBox);
+        widgetpanel.add(chapterBox);
+        widgetpanel.add(startverseBox);
+        widgetpanel.add(search);
+        panel.add(scroller);
+        panel.add(widgetpanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        panel.setLayout(layout);
-        title.setText("BIBLE");
-        bible.add_obj(title,panel,layout,gbc,200,120);
-        bible.add_obj(testamentBox,panel,layout,gbc,160,150);
-        bible.add_obj(bookBox,panel,layout,gbc,180,150);
-        bible.add_obj(chapterBox,panel,layout,gbc,220,150);
-        bible.add_obj(startverseBox,panel,layout,gbc,240,150);
-        bible.add_obj(search,panel,layout,gbc,200,220);
+        frame.getContentPane().add(panel);
+        frame.setVisible(true);
 
         testamentBox.addActionListener(new ActionListener() {
             @Override
@@ -88,9 +99,6 @@ public class UserInterface {
                 searchVerse();
             }
         });
-
-        frame.add(panel);
-        frame.setVisible(true);
     }
     
     public void updateBooks(){
@@ -142,6 +150,6 @@ public class UserInterface {
         book = (String) bookBox.getSelectedItem();
         chapter = (int) chapterBox.getSelectedItem();
         verse = (int) startverseBox.getSelectedItem();
-        backend.bibleDB(book,chapter,verse,0);
+        display.setText(chapter + "|" + verse + " " + backend.bibleDB(book,chapter,verse,0));
     }
 }
