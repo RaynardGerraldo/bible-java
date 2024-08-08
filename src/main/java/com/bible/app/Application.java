@@ -218,7 +218,7 @@ public class Application {
             }
         }
         catch (SQLException e){
-            System.out.println(e.getMessage());
+            System.out.println("No bookmarks yet.");
         }
         return bookmarks;
     }
