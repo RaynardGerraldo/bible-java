@@ -18,6 +18,7 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JComboBox;
 import javax.swing.JTextPane;
+import javax.swing.JOptionPane;
 import javax.swing.BoxLayout;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.text.SimpleAttributeSet;
@@ -66,11 +67,11 @@ public class UserInterface {
         scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         title = new JLabel();
         testamentBox = new JComboBox<>(testaments);
-        testaments.addElement("Old Testament");
-        testaments.addElement("New Testament");
         bookBox = new JComboBox<>(books);
         chapterBox = new JComboBox<>(chapters);
         startverseBox = new JComboBox<>(verses);
+        testaments.addElement("Old Testament");
+        testaments.addElement("New Testament");
         search = new JButton("Search");
         widgetpanel.add(testamentBox);
         widgetpanel.add(bookBox);
@@ -82,7 +83,13 @@ public class UserInterface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(panel);
         frame.setVisible(true);
-
+        
+        // Set to Gen 1.1 by default
+        updateBooks();
+        updateChapters();
+        updateVerses();
+        searchVerse();
+        
         testamentBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -178,7 +185,8 @@ public class UserInterface {
         try {
             doc.setCharacterAttributes(selected_index, selected_verse.length(), bold, false);
         } catch (Exception e) {
-            e.printStackTrace();
+            display.setText(whole_verse);
+            JOptionPane.showMessageDialog(frame, "Pick your book, chapter and verse and try again");
         }
     }
 }
