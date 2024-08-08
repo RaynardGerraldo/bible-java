@@ -10,4 +10,6 @@ Douay Rheims Translation
 ***To Run***:
 `java -classpath ".:lib/sqlite-jdbc-3.46.0.1.jar:lib/slf4j-api-2.0.9.jar:lib/slf4j-jdk14-2.0.9.jar" src/main/java/com/bible/main/Main.java`
 
+Will make .jar soon
+
 \+ J.M.J  +
