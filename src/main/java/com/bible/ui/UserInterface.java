@@ -24,6 +24,7 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyleConstants;
+import java.util.List;
 
 public class UserInterface {
     private JButton search;
@@ -44,6 +45,9 @@ public class UserInterface {
     private SimpleAttributeSet bold;
     private StyledDocument doc;
     private boolean updatingBooks = false;
+    private String book;
+    private int chapter;
+    private int verse;
 
     DefaultComboBoxModel<String> testaments = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<String> books = new DefaultComboBoxModel<>();
@@ -89,6 +93,7 @@ public class UserInterface {
         widgetpanel.add(verseBox);
         widgetpanel.add(search);
         widgetpanel.add(bookmark);
+        widgetpanel.add(bookmarkBox);
 
         panel.add(scroller);
         panel.add(widgetpanel);
@@ -97,12 +102,13 @@ public class UserInterface {
         frame.getContentPane().add(panel);
         frame.setVisible(true);
         
-        // Set to Gen 1.1 by default
+        // Initialize widgets
         updateBooks();
         updateChapters();
         updateVerses();
         searchVerse();
-
+        bookmarkList();
+        
         testamentBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -141,12 +147,12 @@ public class UserInterface {
         });
 
         // Retrieve bookmark
-        //bookmarkBox.addActionListener(new ActionListener() {
-            //@Override
-            //public void actionPerformed(ActionEvent e){
-                //bookmarkGrab();
-            //}
-        //});
+        bookmarkBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                searchBookmark();
+            }
+        });
     }
 
     public void updateBooks(){
@@ -196,9 +202,9 @@ public class UserInterface {
     }
 
     public void searchVerse(){
-        String book = (String) bookBox.getSelectedItem();
-        int chapter = (int) chapterBox.getSelectedItem();
-        int verse = (int) verseBox.getSelectedItem();
+        book = (String) bookBox.getSelectedItem();
+        chapter = (int) chapterBox.getSelectedItem();
+        verse = (int) verseBox.getSelectedItem();
         String whole_verse = backend.bibleDB(book,chapter);
         String selected_verse = backend.selectedDB(book,chapter,verse,0);
         int selected_index = whole_verse.indexOf(selected_verse);
@@ -221,10 +227,45 @@ public class UserInterface {
 
     public void bookmarkInsert(){
         String markname = JOptionPane.showInputDialog(frame,"Bookmark name?",null);
-        String book = (String) bookBox.getSelectedItem();
-        int chapter = (int) chapterBox.getSelectedItem();
-        int verse = (int) verseBox.getSelectedItem();
+        book = (String) bookBox.getSelectedItem();
+        chapter = (int) chapterBox.getSelectedItem();
+        verse = (int) verseBox.getSelectedItem();
         backend.bookmarkInsertDB(markname,book,chapter,verse);
         JOptionPane.showMessageDialog(frame, "Bookmarked!");
+    }
+
+    public void bookmarkList(){
+        List<String> mark_list = backend.bookmarkListDB();
+        for(String bookmark : mark_list){
+            bookmarks.addElement(bookmark);
+        }
+    }
+
+    public void searchBookmark(){
+        String mark_verse = backend.bookmarkGrabDB((String) bookmarkBox.getSelectedItem());
+        String[] parts = mark_verse.split(",");
+        String whole_verse = backend.bibleDB(parts[0],Integer.parseInt(parts[1]));
+        String selected_verse = backend.selectedDB(parts[0],Integer.parseInt(parts[1]), Integer.parseInt(parts[2]),0);
+
+        books.removeAllElements();
+        chapters.removeAllElements();
+        verses.removeAllElements();
+
+        int selected_index = whole_verse.indexOf(selected_verse);
+        try (InputStream fontStream = getClass().getResourceAsStream("/fonts/OLDSH.ttf")){
+            font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            sizedFont = font.deriveFont(15f);
+        } catch (FontFormatException | IOException e){
+            sizedFont = new Font("Arial",Font.PLAIN,15);
+        }
+        display.setFont(sizedFont);
+        display.setText(whole_verse);
+        display.setCaretPosition(selected_index + selected_verse.length());
+        try {
+            doc.setCharacterAttributes(selected_index, selected_verse.length(), bold, false);
+        } catch (Exception e) {
+            display.setText(whole_verse);
+            JOptionPane.showMessageDialog(frame, "Pick your bookmark and try again");
+        }
     }
 }

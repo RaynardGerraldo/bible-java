@@ -11,6 +11,8 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Application {
     String url = "jdbc:sqlite:db/bible_DB.db";
@@ -185,9 +187,7 @@ public class Application {
     public void bookmarkInsertDB(String markname, String book, int chapter, int verse){
         String create_query = "CREATE TABLE IF NOT EXISTS bookmark (id INTEGER,bookmark_name TEXT UNIQUE NOT NULL,book TEXT NOT NULL,chapter INTEGER NOT NULL,verse INTEGER NOT NULL,PRIMARY KEY('id'))";
         String query = "INSERT INTO bookmark (bookmark_name,book,chapter,verse) VALUES (?,?,?,?)";
-        if (markname == ""){
-            markname = book + " " + chapter + " " + verse;
-        }
+        markname = markname + book + " " + chapter + ":" + verse;
         try (Connection conn = DriverManager.getConnection(url)){
            PreparedStatement create_pstmt = conn.prepareStatement(create_query);
            create_pstmt.executeUpdate();
@@ -199,14 +199,47 @@ public class Application {
            pstmt.setInt(3,chapter);
            pstmt.setInt(4,verse);
            pstmt.executeUpdate();
-           System.out.println(markname + " " + book + " " + chapter + " " + verse);
            pstmt.close();
         }
         catch (SQLException e){
             System.out.println(e.getMessage());
         }
     }
+    
+    public List<String> bookmarkListDB(){
+        List<String> bookmarks = new ArrayList<>();
+        String query = "SELECT bookmark_name FROM bookmark";
+        ResultSet rs = null;
+        try(Connection conn = DriverManager.getConnection(url)){
+            Statement stmt = conn.createStatement();
+            rs = stmt.executeQuery(query);
+            while(rs.next()){
+                bookmarks.add(rs.getString("bookmark_name"));
+            }
+        }
+        catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return bookmarks;
+    }
 
+    public String bookmarkGrabDB(String mark_name){
+        String mark_verse = "";
+        String query = "SELECT CONCAT(book,',',chapter,',',verse) AS mark_verse FROM bookmark WHERE bookmark_name = ?";
+        try(Connection conn = DriverManager.getConnection(url)){
+            PreparedStatement pstmt = conn.prepareStatement(query);
+            pstmt.setString(1,mark_name);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()){
+                mark_verse = rs.getString("mark_verse");
+            }
+        }
+        catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return mark_verse;
+    }
+    
     public void run() {
         UserInterface ui = new UserInterface();
         ui.createUI();
