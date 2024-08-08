@@ -1,10 +1,15 @@
 package com.bible.ui;
 
 import com.bible.app.Application;
+import java.io.InputStream;
+import java.io.IOException;
+import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontFormatException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFrame;
 import javax.swing.JButton;
@@ -30,6 +35,8 @@ public class UserInterface {
     private JComboBox<String> bookBox;
     private JComboBox<Integer> chapterBox;
     private JComboBox<Integer> startverseBox;
+    private Font font;
+    private Font sizedFont;
     private SimpleAttributeSet bold;
     private StyledDocument doc;
     private boolean updatingBooks = false;
@@ -40,7 +47,6 @@ public class UserInterface {
     DefaultComboBoxModel<String> books = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> chapters = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> verses = new DefaultComboBoxModel<>();
-
     Application backend = new Application();
     public void createUI(){
         frame = new JFrame("Bible");
@@ -50,6 +56,7 @@ public class UserInterface {
         doc = display.getStyledDocument();
         bold = new SimpleAttributeSet();
         StyleConstants.setBold(bold,true);
+        StyleConstants.setBackground(bold, Color.YELLOW);
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         widgetpanel = new JPanel();
@@ -159,7 +166,15 @@ public class UserInterface {
         String whole_verse = backend.bibleDB(book,chapter);
         String selected_verse = backend.selectedDB(book,chapter,verse,0);
         int selected_index = whole_verse.indexOf(selected_verse);
+        try (InputStream fontStream = getClass().getResourceAsStream("/fonts/OLDSH.ttf")){
+            font = Font.createFont(Font.TRUETYPE_FONT, fontStream);
+            sizedFont = font.deriveFont(15f);
+        } catch (FontFormatException | IOException e){
+            sizedFont = new Font("Arial",Font.PLAIN,15);
+        }
+        display.setFont(sizedFont);
         display.setText(whole_verse);
+        display.setCaretPosition(selected_index + selected_verse.length());
         try {
             doc.setCharacterAttributes(selected_index, selected_verse.length(), bold, false);
         } catch (Exception e) {
