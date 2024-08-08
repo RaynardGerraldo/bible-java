@@ -2,6 +2,10 @@
 
 Douay Rheims Translation
 
+### Requirements
++ Java
++ Sqlite
+
 ***Run steps below on bible-java directory***
 
 ***To Build***:
