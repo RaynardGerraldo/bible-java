@@ -162,19 +162,12 @@ public class Application {
         book = book_dict.get(book);
         String query = "SELECT CONCAT(chapter,'|',start_verse,'|',text) AS fin_text FROM verse WHERE book=? AND chapter=? AND start_verse=?";
         try (Connection conn = DriverManager.getConnection(url)){
-           if (end_verse != null && end_verse != 0) {
-               query += " AND end_verse=?";
-           }
-
            PreparedStatement pstmt = conn.prepareStatement(query);
 
            pstmt.setString(1, book);
            pstmt.setInt(2, chapter);
            pstmt.setInt(3, start_verse);
 
-           if (end_verse != null && end_verse != 0) {
-               pstmt.setInt(4, end_verse);
-           }
            ResultSet rs = pstmt.executeQuery();
            while (rs.next()){
                 text = rs.getString("fin_text");
@@ -188,6 +181,32 @@ public class Application {
         }
         return text;
     }
+
+    public void bookmarkInsertDB(String markname, String book, int chapter, int verse){
+        String create_query = "CREATE TABLE IF NOT EXISTS bookmark (id INTEGER,bookmark_name TEXT UNIQUE NOT NULL,book TEXT NOT NULL,chapter INTEGER NOT NULL,verse INTEGER NOT NULL,PRIMARY KEY('id'))";
+        String query = "INSERT INTO bookmark (bookmark_name,book,chapter,verse) VALUES (?,?,?,?)";
+        if (markname == ""){
+            markname = book + " " + chapter + " " + verse;
+        }
+        try (Connection conn = DriverManager.getConnection(url)){
+           PreparedStatement create_pstmt = conn.prepareStatement(create_query);
+           create_pstmt.executeUpdate();
+           create_pstmt.close();
+
+           PreparedStatement pstmt = conn.prepareStatement(query);
+           pstmt.setString(1,markname);
+           pstmt.setString(2,book);
+           pstmt.setInt(3,chapter);
+           pstmt.setInt(4,verse);
+           pstmt.executeUpdate();
+           System.out.println(markname + " " + book + " " + chapter + " " + verse);
+           pstmt.close();
+        }
+        catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+    }
+
     public void run() {
         UserInterface ui = new UserInterface();
         ui.createUI();

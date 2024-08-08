@@ -24,8 +24,10 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 import javax.swing.text.StyleConstants;
+
 public class UserInterface {
     private JButton search;
+    private JButton bookmark;
     private JFrame frame;
     private JLabel title;
     private JPanel panel;
@@ -35,51 +37,62 @@ public class UserInterface {
     private JComboBox<String> testamentBox;
     private JComboBox<String> bookBox;
     private JComboBox<Integer> chapterBox;
-    private JComboBox<Integer> startverseBox;
+    private JComboBox<Integer> verseBox;
+    private JComboBox<String> bookmarkBox;
     private Font font;
     private Font sizedFont;
     private SimpleAttributeSet bold;
     private StyledDocument doc;
     private boolean updatingBooks = false;
-    private String book;
-    private int chapter;
-    private int verse;
+
     DefaultComboBoxModel<String> testaments = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<String> books = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> chapters = new DefaultComboBoxModel<>();
     DefaultComboBoxModel<Integer> verses = new DefaultComboBoxModel<>();
+    DefaultComboBoxModel<String> bookmarks = new DefaultComboBoxModel<>();
+
     Application backend = new Application();
+
     public void createUI(){
         frame = new JFrame("Bible");
         display = new JTextPane();
-        display.setSize(30,50);
-        display.setEditable(false);
         doc = display.getStyledDocument();
         bold = new SimpleAttributeSet();
-        StyleConstants.setBold(bold,true);
-        StyleConstants.setBackground(bold, Color.YELLOW);
         panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         widgetpanel = new JPanel();
         widgetpanel.setLayout(new FlowLayout());
         scroller = new JScrollPane(display);
-        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
-        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         title = new JLabel();
         testamentBox = new JComboBox<>(testaments);
         bookBox = new JComboBox<>(books);
         chapterBox = new JComboBox<>(chapters);
-        startverseBox = new JComboBox<>(verses);
+        verseBox = new JComboBox<>(verses);
+        bookmarkBox = new JComboBox<>(bookmarks);
+        search = new JButton("Search");
+        bookmark = new JButton("Bookmark");
+        display.setSize(30,50);
+        display.setEditable(false);
+
+        StyleConstants.setBold(bold,true);
+        StyleConstants.setBackground(bold, Color.YELLOW);
+
+        scroller.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        scroller.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+ 
         testaments.addElement("Old Testament");
         testaments.addElement("New Testament");
-        search = new JButton("Search");
+
         widgetpanel.add(testamentBox);
         widgetpanel.add(bookBox);
         widgetpanel.add(chapterBox);
-        widgetpanel.add(startverseBox);
+        widgetpanel.add(verseBox);
         widgetpanel.add(search);
+        widgetpanel.add(bookmark);
+
         panel.add(scroller);
         panel.add(widgetpanel);
+ 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(panel);
         frame.setVisible(true);
@@ -89,7 +102,7 @@ public class UserInterface {
         updateChapters();
         updateVerses();
         searchVerse();
-        
+
         testamentBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -101,7 +114,7 @@ public class UserInterface {
             @Override
             public void actionPerformed(ActionEvent e){
                 if (!updatingBooks){
-                    updateChapters();
+                   updateChapters();
                 }
             }
         });
@@ -119,8 +132,23 @@ public class UserInterface {
                 searchVerse();
             }
         });
+
+        bookmark.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e){
+                bookmarkInsert();
+            }
+        });
+
+        // Retrieve bookmark
+        //bookmarkBox.addActionListener(new ActionListener() {
+            //@Override
+            //public void actionPerformed(ActionEvent e){
+                //bookmarkGrab();
+            //}
+        //});
     }
-    
+
     public void updateBooks(){
         if (testamentBox.getSelectedItem().equals("Old Testament")){
             String[] book_names = {"Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Josue", "Judges", "Ruth", "1 Samuel", "2 Samuel", "3 Kings", "4 Kings", "1 Paralipomenon", "2 Paralipomenon", "1 Esdras", "2 Esdras", "Tobias", "Judith", "Esther", "Job", "Psalms", "Proverbs", "Ecclesiastes", "Canticle of Canticles", "Wisdom", "Ecclesiasticus", "Isaiah", "Jeremiah", "Lamentations", "Baruch", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Abdias", "Jonas", "Micheas", "Nahum", "Habacuc", "Sophonias", "Aggeus", "Zacharias", "Malachias", "1 Machabees", "2 Machabees"}; 
@@ -166,10 +194,11 @@ public class UserInterface {
             }
        }
     }
+
     public void searchVerse(){
-        book = (String) bookBox.getSelectedItem();
-        chapter = (int) chapterBox.getSelectedItem();
-        verse = (int) startverseBox.getSelectedItem();
+        String book = (String) bookBox.getSelectedItem();
+        int chapter = (int) chapterBox.getSelectedItem();
+        int verse = (int) verseBox.getSelectedItem();
         String whole_verse = backend.bibleDB(book,chapter);
         String selected_verse = backend.selectedDB(book,chapter,verse,0);
         int selected_index = whole_verse.indexOf(selected_verse);
@@ -188,5 +217,14 @@ public class UserInterface {
             display.setText(whole_verse);
             JOptionPane.showMessageDialog(frame, "Pick your book, chapter and verse and try again");
         }
+    }
+
+    public void bookmarkInsert(){
+        String markname = JOptionPane.showInputDialog(frame,"Bookmark name?",null);
+        String book = (String) bookBox.getSelectedItem();
+        int chapter = (int) chapterBox.getSelectedItem();
+        int verse = (int) verseBox.getSelectedItem();
+        backend.bookmarkInsertDB(markname,book,chapter,verse);
+        JOptionPane.showMessageDialog(frame, "Bookmarked!");
     }
 }
